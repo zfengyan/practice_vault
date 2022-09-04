@@ -28,6 +28,19 @@ int main()
 
 	bool construct_default_maze = true;
 	Maze<int> maze(construct_default_maze);  // construct the default maze, type: int
-	std::cout << maze.get_neighbors(8).back();
+
+	// alter the parameters here: maze.solve_maze_backtracking(start, end)
+	std::list<int> path = maze.solve_maze_backtracking(0, 8);
+	// alter done
+
+	std::cout << "the size of path list is: " << path.size() << '\n';
+	std::cout << "the path is: " << '\n';
+	std::list<int>::iterator iter = path.begin();
+	while (iter != path.end())
+	{
+		std::cout << *iter << " ";
+		++iter;
+	}
+		
 	return 0;
 }

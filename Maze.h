@@ -22,6 +22,7 @@ maze[2] stores only 1  --> indicating 1 is the only viable neighbor of pos 2;
 
 #include<list>
 #include<unordered_set>
+#include<iterator>
 
 
 template<typename T>
@@ -107,7 +108,7 @@ public:
 	in some search problems, keeping a visited list is for improving the performance
 	in this problem, keeping a visited list is meant for avoiding endless loop
 	*/
-	std::list<T> solve_maze_backtracking(std::list<T> maze, T start, T end)
+	std::list<T> solve_maze_backtracking(T start, T end)
 	{
 		std::unordered_set<T> visited;  // visited list
 		std::list<T> path;  // sotre the path
@@ -121,8 +122,41 @@ public:
 		// loop for processing: when reaching the end position or the path is empty
 		while (path.back() != end && path.empty() == false)
 		{
+			typename std::list<T>::iterator iter = maze[currentPos].begin();  // iterate all neighbors of currentPos
+			bool foundOutlet = false;  // when an outlet is found, mark it as true
 
+			// inner loop: for currentPos, when reaching the last neighbor or an outlet is found
+			while (iter != maze[currentPos].end() && (!foundOutlet))
+			{
+				// check if connection leads to unvisited point
+				if (visited.count(*iter) == 0)
+				{
+					foundOutlet = true;
+				}
+				else
+				{
+					iter++;
+				}
+			}
+
+			// outside the inner loop
+			if (foundOutlet)  // if an outlet is found, add it to path list and visited set
+			{
+				path.emplace_back();
+				path.back() = *iter;  // add the outlet to the path list
+				visited.insert(*iter);  // add the outlet to the visited set
+			}
+			else 
+			{
+				path.pop_back();
+			}
+
+			// last step: set the currentPos to the last element of the path list
+			currentPos = path.back();
 		}
+
+		// return the path
+		return path;
 
 	}
 
