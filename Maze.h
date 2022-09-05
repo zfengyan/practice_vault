@@ -154,6 +154,7 @@ public:
 			// last step: set the currentPos to the last element of the path list
 			currentPos = path.back();
 		}
+		// end of the outer loop
 
 		// return the path
 		return path;
