@@ -1,4 +1,6 @@
 /*
+Origin: https://www.youtube.com/watch?v=gBC_Fd8EE8A
+
 use list to define a maze:
 
 simple maze:
