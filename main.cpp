@@ -83,15 +83,19 @@ namespace GenerateMesh {
             m_Meshes.emplace_back(Mesh::Load(file));
         }*/
 
+        /*
+        * it is important to save the result of std::async()
+        * to enable the async process
+        */
         for (const auto& file : meshFilepaths) {
-            m_Futures.emplace_back(std::async(std::launch::async, LoadMesh, &m_Meshes, file)); /* using auto result = std::async(...) ? */
-            // question: do we have to use get()?
-            // i.e. 
-            // auto result = std::async(std::launch::async, LoadMesh, &m_Meshes, file);
-            // result.get();
-            // ?
+            m_Futures.emplace_back(std::async(std::launch::async, LoadMesh, &m_Meshes, file));
         }
 
+
+        /*
+        * if we wish to get the result value and keep processing
+        * we need to use get() of every future object
+        */
         for (auto& futureObject : m_Futures) {
             futureObject.get();
         }
