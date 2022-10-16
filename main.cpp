@@ -1,46 +1,70 @@
-#include "binarysearch.h"
-#include "Maze.h"
 #include <iostream>
+#include <functional> // for std::reference_wrapper<T>
+#include <future> // for std::async
+#include <mutex> // for std::mutex
+#include <vector>
 
-/* container_type */
-typedef vector<int> container_type;
+struct Mesh;
+class LoadMesh;
 
-/* example: a generic traversing function */
-std::ostream& operator<<(std::ostream& os, const container_type& c)
-{
-	for (container_type::const_iterator it = c.begin(); it != c.end(); ++it)
-		os << *it << " ";
-	return os;
-}
+template<typename T>
+using Ref = std::reference_wrapper<T>;
 
+struct Mesh {
+    static Ref<Mesh> Load(const std::string& file) {
+        // ...
+        Mesh m;
+        return std::ref(m); // can not use std::ref(Mesh())
+
+        // generate an object of type std::reference_wrapper
+    }
+};
+
+
+namespace GenerateMesh {
+
+    std::vector<Ref<Mesh>> m_Meshes;
+    std::vector<std::future<void>> m_Futures; // store the return value of std::async, necessary step to make async work
+    std::mutex s_MeshesMutex;
+
+
+    void LoadMesh(std::vector<Ref<Mesh>>* meshes, std::string filepath /* make copy */) {
+        auto mesh = Mesh::Load(filepath);
+
+        // using a local lock_guard to lock mtx guarantees unlocking on destruction / exception:
+        std::lock_guard<std::mutex> lock(s_MeshesMutex); // lock the meshes to avoid conflict
+        meshes->emplace_back(mesh);
+
+        //std::cout<<mesh;
+    }
+
+
+    void LoadMeshes() {
+        std::vector<std::string> meshFilepaths; // read from a .txt file ...
+
+        // ...
+        // meshFilepaths.emplace_back(...)
+
+        /*for(const auto& file : meshFilepaths){
+            m_Meshes.emplace_back(Mesh::Load(file));
+        }*/
+
+        for (const auto& file : meshFilepaths) {
+            m_Futures.emplace_back(std::async(std::launch::async, LoadMesh, &m_Meshes, file)); /* using auto result = std::async(...) ? */
+            // question: do we have to use get()?
+            // i.e. 
+            // auto result = std::async(std::launch::async, LoadMesh, &m_Meshes, file);
+            // result.get();
+            // ?
+        }
+    }
+
+};
 
 
 int main()
 {
-	/*vector<int> sorted_array = { 1,2,3,4,5,6 };
-	std::cout << "input sorted array is\n";
-	std::cout << sorted_array << '\n';
-	int target = 1;
-	std::cout << "target value is: " << target << '\n';
-	BinarySearch<int> bs(sorted_array, target);
-	std::cout << "search result (return index if exists): " << bs.search() << '\n';
-	return 0;*/
-
-	bool construct_default_maze = true;
-	Maze<int> maze(construct_default_maze);  // construct the default maze, type: int
-
-	// alter the parameters here: maze.solve_maze_backtracking(start, end)
-	std::list<int> path = maze.solve_maze_backtracking(0, 8);
-	// alter done
-
-	std::cout << "the size of path list is: " << path.size() << '\n';
-	std::cout << "the path is: " << '\n';
-	std::list<int>::iterator iter = path.begin();
-	while (iter != path.end())
-	{
-		std::cout << *iter << " ";
-		++iter;
-	}
-		
-	return 0;
+    GenerateMesh::LoadMeshes();
+    std::cout << "done" << '\n';
+    return 0;
 }
