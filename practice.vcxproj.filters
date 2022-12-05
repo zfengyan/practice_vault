@@ -35,5 +35,6 @@
       <Filter>源文件</Filter>
     </Text>
     <Text Include="src\main-thread.txt" />
+    <Text Include="src\test.txt" />
   </ItemGroup>
 </Project>
