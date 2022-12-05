@@ -139,14 +139,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="binarysearch.h" />
-    <ClInclude Include="Maze.h" />
+    <ClInclude Include="src\binarysearch.h" />
+    <ClInclude Include="src\geometry.hpp" />
+    <ClInclude Include="src\Maze.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="main_maze.txt" />
+    <Text Include="src\main-maze.txt" />
+    <Text Include="src\main-thread.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
