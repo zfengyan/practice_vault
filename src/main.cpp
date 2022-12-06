@@ -17,5 +17,14 @@ int main()
 	p_self_old.rotate(M_PI / 2);
 	p_self_old.print();
 
+	// test triangle
+	Triangle triangle = { {0,0}, {4,0}, {2,2} };
+	std::cout << "triangle area: " << triangle.area() << '\n';
+	triangle.print();
+	Triangle new_triangle = triangle.rotated(M_PI / 2);
+	new_triangle.print();
+	triangle.rotate(M_PI / 2);
+	triangle.print();
+
 	return 0;
 }
