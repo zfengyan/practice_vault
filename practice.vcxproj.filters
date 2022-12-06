@@ -24,6 +24,9 @@
     <ClInclude Include="src\geometry.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\class_constructors.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">

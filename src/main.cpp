@@ -1,30 +1,57 @@
-#include "geometry.hpp"
+#include "class_constructors.hpp"
 
-int main()
-{
-	Point p1(2.0, 2.0);
-	int a = 1, b = 2;
-	Point p2(a, b);
-	Point p = { 1,2 };
-	std::cout << p2.distance() << '\n';
-	std::cout << p2.distance(p1) << '\n';
+// The global main function that is the designated start of the program
+int main() {
 
-	Point p_old(2.0, 0.0);
-	Point p_new = p_old.rotated(M_PI / 2);
-	p_new.print();
+    Container a({ 1, 2, 3, 4 });
+    a.info();
+    a.print();
 
-	Point p_self_old(2.0, 0.0);
-	p_self_old.rotate(M_PI / 2);
-	p_self_old.print();
+    // Conversion constructor is no longer available due to the use of
+    // the explicit specifier in the constructor defined at line 23
+    //Container b = {1, 2, 3, 4};
+    //b.info(); b.print();
 
-	// test triangle
-	Triangle triangle = { {0,0}, {4,0}, {2,2} };
-	std::cout << "triangle area: " << triangle.area() << '\n';
-	triangle.print();
-	Triangle new_triangle = triangle.rotated(M_PI / 2);
-	new_triangle.print();
-	triangle.rotate(M_PI / 2);
-	triangle.print();
+    Container c(3);
+    c.info();
+    c.print();
 
-	return 0;
+    // Conversion constructor is no longer available due to the use of
+    // the explicit specifier in the constructor defined at line 15
+    //Container d = 3;
+    //d.info();
+    //d.print();
+
+    // User-defined copy constructor
+    Container e(a);
+    e.info();
+    e.print();
+
+    // User-defined move constructor
+    Container f(std::move(a));
+    f.info();
+    f.print();
+
+    // Container a should be empty now!
+    a.info();
+    a.print();
+
+    // User-defined copy assignment operator
+    Container g(0);
+    g = e;
+    g.info();
+    g.print();
+
+    // User-defined move assignment operator
+    Container h(0);
+    h = std::move(f);
+    h.info();
+    h.print();
+
+    // Container f should be empty now!
+    f.info();
+    f.print();
+
+    // Return code 0 to the operating system (= no error)
+    return 0;
 }

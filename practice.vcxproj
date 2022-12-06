@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\binarysearch.h" />
+    <ClInclude Include="src\class_constructors.hpp" />
     <ClInclude Include="src\geometry.hpp" />
     <ClInclude Include="src\Maze.h" />
   </ItemGroup>
