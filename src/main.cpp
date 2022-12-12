@@ -1,57 +1,73 @@
-#include "class_constructors.hpp"
+#include <functional>
+#include <iostream>
 
-// The global main function that is the designated start of the program
-int main() {
+// Your implementation of the abstract base class goes here
+class Derivative
+{
+public: //[DO NOT MODIFY/REMOVE THIS GETTER: IT IS USED IN THE SPECTEST]
+    double GetH() const { return h; }
+public:
+    Derivative():h(1e-8)
+    {}
 
-    Container a({ 1, 2, 3, 4 });
-    a.info();
-    a.print();
+    Derivative(double H):h(H)
+    {}
 
-    // Conversion constructor is no longer available due to the use of
-    // the explicit specifier in the constructor defined at line 23
-    //Container b = {1, 2, 3, 4};
-    //b.info(); b.print();
+    // pure virtual function
+    virtual double differentiate(const std::function<double(double)>& func, double x) const = 0;
+protected:
+    double h;
+};
 
-    Container c(3);
-    c.info();
-    c.print();
 
-    // Conversion constructor is no longer available due to the use of
-    // the explicit specifier in the constructor defined at line 15
-    //Container d = 3;
-    //d.info();
-    //d.print();
+// Your implementation of the derived class for the central difference scheme goes here
+class CentralDifference : public Derivative 
+{
+public:
+    using Derivative::Derivative; // inherit the constructors from the base class
+public:
+    virtual double differentiate(const std::function<double(double)>& func, double x) const override final
+    {
+        return ((func(x + h) - func(x - h)) / (2 * h));
+    }
+};
 
-    // User-defined copy constructor
-    Container e(a);
-    e.info();
-    e.print();
 
-    // User-defined move constructor
-    Container f(std::move(a));
-    f.info();
-    f.print();
+// Your implementation of the derived class for the forward difference scheme goes here
+class ForwardDifference : public Derivative
+{
+public:
+    using Derivative::Derivative; // inherit the constructors from the base class
+public:
+    virtual double differentiate(const std::function<double(double)>& func, double x) const override final
+    {
+        return ((func(x + h) - func(x)) / h);
+    }
+};
 
-    // Container a should be empty now!
-    a.info();
-    a.print();
 
-    // User-defined copy assignment operator
-    Container g(0);
-    g = e;
-    g.info();
-    g.print();
+double test1(double x) { return x; }
+auto test2 = [](double x) { return x; };
 
-    // User-defined move assignment operator
-    Container h(0);
-    h = std::move(f);
-    h.info();
-    h.print();
 
-    // Container f should be empty now!
-    f.info();
-    f.print();
+int main()
+{
+    // Your tests go here
+    CentralDifference central_diff_default;
+    std::cout << central_diff_default.differentiate(test1, 10);
+    std::cout << central_diff_default.differentiate(test2, 10);
 
-    // Return code 0 to the operating system (= no error)
+    ForwardDifference forward_diff_default;
+    std::cout << forward_diff_default.differentiate(test1, 10);
+    std::cout << forward_diff_default.differentiate(test2, 10);
+
+    CentralDifference central_diff_1(0.1);
+    std::cout << central_diff_1.differentiate(test1, 10);
+    std::cout << central_diff_1.differentiate(test2, 10);
+
+    ForwardDifference forward_diff_1(0.1);
+    std::cout << forward_diff_1.differentiate(test1, 1.0);
+    std::cout << forward_diff_1.differentiate(test2, 1.0);
+
     return 0;
 }

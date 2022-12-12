@@ -9,101 +9,127 @@
 // Include header file for memory
 #include <memory>
 
+
+
 // Class encapsulating array and its lengths
 class Container
 {
+public: //[DO NOT MODIFY/REMOVE THESE GETTERS AND SETTERS: THEY ARE USED IN THE SPECTEST]
+    int GetLength() const { return length; }
+    double* GetData() const { return data; }
+    void SetLength(const int length) { this->length = length; }
+    void SetData(double* data) { this->data = data; }
+
 public:
-    // Constructor
-    explicit Container(int length)
-        : data(new double[length]),
-        length(length)
+
+    // default constructor
+    explicit Container():
+        length(0), data(nullptr)
     {
-        std::cout << __FUNCTION__ << " called" << std::endl;
+        print("default constructor called!");
     }
 
-    // Unified initialization Constructor
-    explicit Container(const std::initializer_list<double>& list)
-        : Container((int)list.size())
+
+    // conversion constructor
+    explicit Container(int length): 
+        length(length),
+        data(new double[length])
+    {
+        print("conversion constructor called!");
+    }
+
+
+    // unified initialization constructor
+    explicit Container(const std::initializer_list<double>& list): 
+        Container((int)list.size())
     {
         std::uninitialized_copy(list.begin(), list.end(), data);
-        std::cout << __FUNCTION__ << " called" << std::endl;
+        print("unified initialization constructor called!");
     }
 
-    // Copy Constructor
-    explicit Container(const Container& other)
-        : Container(other.length)
+
+    // copy constructor
+    explicit Container(const Container& other): 
+        Container(other.length)
     {
-        for (auto i = 0; i < other.length; i++)
+        for (int i = 0; i < other.length; ++i)
             data[i] = other.data[i];
-        std::cout << __FUNCTION__ << " called" << std::endl;
+        print("copy constructor called!");
     }
 
-    // Move Constructor
-    Container(Container&& other)
-        : data(other.data), length(other.length)
+
+    // move constructor
+    Container(Container&& other): 
+        length(other.length),
+        data(other.data) // shallow copy: copy the pointer, pointing to the same resources
     {
         other.length = 0;
-        other.data = nullptr;
-        std::cout << __FUNCTION__ << " called" << std::endl;
+        other.data = nullptr; // IMPORTANT step
+        print("move constructor called!");
     }
 
-    // Destructor
+
+    // destructor
     ~Container()
     {
         delete[] data;
         data = nullptr;
         length = 0;
-        std::cout << __FUNCTION__ << " called" << std::endl;
+        print("destructor called!");
     }
 
-    // Copy assignment
+
+    // copy assignment operator
     Container& operator=(const Container& other)
     {
-        if (this != &other)
+        if (this != &other) // guard: a = a is meaningless
         {
-            delete[] data;
-            data = nullptr;
+            delete[] data; // IMPORTANT: clean up the resources held by the old object
+            data = nullptr; // data is going to be used again later, do not make it a wild pointer, set it to nullptr
             length = other.length;
             data = new double[other.length];
-            for (auto i = 0; i < other.length; i++)
+            for (int i = 0; i < other.length; ++i)
                 data[i] = other.data[i];
         }
-        std::cout << __FUNCTION__ << " called" << std::endl;
+        print("copy assignment operator called!");
         return *this;
     }
 
-    // Move assignment
+
+    // move assignment operator
     Container& operator=(Container&& other)
     {
         if (this != &other)
         {
-            delete[] data;
+            delete[] data; // clean up the resources held by the old object
             length = other.length;
-            data = other.data;
+            data = other.data; // shallow copy: copy the pointer, now data also points to the memory of other.data
             other.length = 0;
-            other.data = nullptr;
+            other.data = nullptr; // set other.data to nullptr
         }
-        std::cout << __FUNCTION__ << " called" << std::endl;
+        print("move assignment operator called!");
         return *this;
     }
 
-    // Print container content
-    void print()
+
+    // operator+
+    Container operator+(const Container& other)
     {
-        std::cout << "Container: ";
-        for (auto i = 0; i < length; i++)
-            std::cout << data[i] << " ";
-        std::cout << std::endl;
-        std::cout << __FUNCTION__ << " called" << std::endl;
+        Container res;
+        res.length = this->length;
+        for (int i = 0; i < length; ++i)
+        {
+            res.data[i] = this->data[i] + other.data[i];
+        }
+        print("operator+ called!");
+        return res;
     }
 
-    // Print container info
-    void info()
+
+    // Print function
+    void print(const char* info)
     {
-        std::cout << "Length of data pointer:  " << length << std::endl;
-        std::cout << "Address of data pointer: " << &data << std::endl;
-        std::cout << "Data pointer:            " << data << std::endl;
-        std::cout << __FUNCTION__ << " called" << std::endl;
+        std::cout << info << '\n';
     }
 
 private:

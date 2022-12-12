@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\class_inheritance.hpp" />
     <ClInclude Include="src\binarysearch.h" />
     <ClInclude Include="src\class_constructors.hpp" />
     <ClInclude Include="src\geometry.hpp" />
