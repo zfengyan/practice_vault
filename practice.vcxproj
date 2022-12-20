@@ -149,6 +149,7 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="src\main-inheritance.txt" />
     <Text Include="src\main-maze.txt" />
     <Text Include="src\main-thread.txt" />
     <Text Include="src\test.txt" />
