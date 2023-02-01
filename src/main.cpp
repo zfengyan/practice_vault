@@ -61,6 +61,12 @@ public:
         std::copy(list.begin(), list.end(), data);
     }
 
+    // initialize
+    void initialize()
+    {
+        for (int i = 0; i < length; ++i)data[i] = 0;
+    }
+
     // Destructor
     ~Vector()
     {
@@ -314,6 +320,9 @@ operator*(const Matrix<T>& lhs, const Vector<U>& rhs)
     // if compatible, the result of multiplication should be a vector
     using result_type = typename std::common_type<T, U>::type; // necessary
     Vector<result_type> result(lhs.nrows());
+
+    //initialize
+    result.initialize();
 
     for (auto it = lhs.begin(); it != lhs.end(); ++it) { // need to define begin() and end() function
         //std::cout << it->first.first << " " << it->first.second << " " << it->second << '\n';
