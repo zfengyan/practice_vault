@@ -264,6 +264,22 @@ public:
         std::cout << '\n';
     }
 
+    // for cout
+    friend std::ostream& operator<<(std::ostream& os, const Matrix<T>& mat)
+    {
+        for (int i = 0; i < mat.nrows(); ++i)
+        {
+            for (int j = 0; j < mat.ncols(); ++j)
+            {
+                auto x = mat({i, j});   
+                if (std::abs(x) < 1.0e-8) x = 0.0;
+                os << x << '\t';
+            }
+            os << '\n';
+        }
+        return os;
+    }
+
 private:
     std::map<std::pair<int, int>, T> m_data; // non-zero matrix entries
     int m_nrows; // number of rows
@@ -288,10 +304,17 @@ operator*(const Matrix<T>& lhs, const Vector<U>& rhs)
     using result_type = typename std::common_type<T, U>::type; // necessary
     Vector<result_type> result(lhs.nrows());
 
-    for (auto const& [key, value] : lhs.data()) {
-        std::cout << key.first << '\n';
-        result[key.first] += value * rhs[key.second];
+    for (int i = 0; i < lhs.nrows(); ++i)
+    {
+        for (int j = 0; j < lhs.ncols(); ++j)
+        {
+            result[i] += lhs({ i, j }) * rhs[j];
+        }
     }
+
+    /*for (auto const& [key, value] : lhs.data()) {
+        result[key.first] += value * rhs[key.second];
+    }*/
 
     return result;
 }
@@ -318,12 +341,7 @@ int cg(const Matrix<T>& A,
         Vector<T> rold = r; // store previous residual
         Vector<T> Ap = A * p; // matrix A times vector P
 
-        std::cout << "p: " << p << '\n';
-        std::cout << "Ap: " << Ap << '\n';
-
         T alpha = dot(r, r) / dot(p, Ap);
-
-        std::cout << "alpha: " << alpha << '\n';
 
         x = x + alpha * p; // next estimate of solution
         r = r - alpha * Ap; // residual 
@@ -413,24 +431,27 @@ int main(int argc, char* argv[])
     //catch (...) { std::cout << "Matrix entry not present!" << '\n'; }
 
     //// test matrix - vector multiplication
-    //std::cout << "test matrix - vector multiplication" << '\n';
-    //Matrix<double> m(4, 4);
+    std::cout << "test matrix - vector multiplication" << '\n';
+    Matrix<double> m(4, 4);
 
-    /*
+    
     m[{0,0}] = 1; m[{0,1}] = 0; m[{0,2}] = 0; m[{0,3}] = 1;
     m[{1,0}] = 0; m[{1,1}] = 2; m[{1,2}] = 3; m[{1,3}] = 0;
     m[{2,0}] = 0; m[{2,1}] = 0; m[{2,2}] = 5; m[{2,3}] = 0;
     m[{3,0}] = 1; m[{3,1}] = 0; m[{3,2}] = 0; m[{3,3}] = 1;
-    */
 
-    //m[{0, 0}] = 1; m[{0, 3}] = 1;
-    //m[{1, 1}] = 2; m[{1, 2}] = 3;
-    //m[{2, 2}] = 5;
-    //m[{3, 0}] = 1; m[{3, 3}] = 1;
+    std::cout << m;
+    
 
-    //Vector<double> n(4);
-    //n[0] = 1.22958; n[1] = -0.196732; n[2] = -0.196732; n[3] = 1.22958;
-    //auto mv = m * n;
+   /* m[{0, 0}] = 1; m[{0, 3}] = 1;
+    m[{1, 1}] = 2; m[{1, 2}] = 3;
+    m[{2, 2}] = 5;
+    m[{3, 0}] = 1; m[{3, 3}] = 1;*/
+
+    Vector<double> n(4);
+    n[0] = 1.22958; n[1] = -0.196732; n[2] = -0.196732; n[3] = 1.22958;
+    auto mv = m * n;
+    std::cout << "mv: " << mv << '\n';
     //std::cout << "result type of matrix - vector multiplication: " << typeid(mv[0]).name() << '\n';
     //mv.print();
     //std::cout << "== Matrix test end == " << std::endl;
