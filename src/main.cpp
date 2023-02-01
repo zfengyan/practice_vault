@@ -316,7 +316,7 @@ operator*(const Matrix<T>& lhs, const Vector<U>& rhs)
     Vector<result_type> result(lhs.nrows());
 
     for (auto it = lhs.begin(); it != lhs.end(); ++it) { // need to define begin() and end() function
-        // std::cout << it->first.first << " " << it->first.second << " " << it->second << '\n';
+        //std::cout << it->first.first << " " << it->first.second << " " << it->second << '\n';
         result[it->first.first] = result[it->first.first] + it->second * rhs[it->first.second];
     }
 
@@ -539,18 +539,20 @@ int main(int argc, char* argv[])
 
     // must define the matrix A explicitly - why?
 
+    /*
     cg_A[{0, 0}] = 1; cg_A[{0, 1}] = 0; cg_A[{0, 2}] = 0; cg_A[{0, 3}] = 1;
     cg_A[{1, 0}] = 0; cg_A[{1, 1}] = 2; cg_A[{1, 2}] = 3; cg_A[{1, 3}] = 0;
     cg_A[{2, 0}] = 0; cg_A[{2, 1}] = 0; cg_A[{2, 2}] = 5; cg_A[{2, 3}] = 0;
     cg_A[{3, 0}] = 1; cg_A[{3, 1}] = 0; cg_A[{3, 2}] = 0; cg_A[{3, 3}] = 1;
+    */
 
 
-    /*
+    
     cg_A[{0,0}] = 1; cg_A[{0,3}] = 1;
     cg_A[{1,1}] = 2; cg_A[{1,2}] = 3;
     cg_A[{2,2}] = 5;
     cg_A[{3,0}] = 1; cg_A[{3,3}] = 1;
-    */
+    
 
     Vector<double> cg_x = { 0, 0, 0, 0 }; // initial guess of cg function
 
