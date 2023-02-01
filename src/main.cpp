@@ -322,8 +322,6 @@ operator*(const Matrix<T>& lhs, const Vector<U>& rhs)
     using result_type = typename std::common_type<T, U>::type; // necessary
     Vector<result_type> result(lhs.nrows());
 
-    std::cout << "result: " << result << '\n';
-
     //initialize
     //result.initialize();
 
@@ -463,55 +461,6 @@ private:
 // ===================================================================================================
 int main(int argc, char* argv[])
 {
-
-    //---------------- Vector test start----------------
-    //std::cout << "== Vector test start == " << std::endl;
-
-    //// Initialise vectors
-    //Vector<int> x({ 1, 2, 3, 4, 5 });
-    //Vector<int> y({ 2, 4, 6, 8, 10 });
-    //Vector<int> z({ 1, 3, 5, 7 });
-
-    //// try vector addition
-    //Vector<float> v1({ 1, 2, 3, 4, 5 });
-    //Vector<int> v2({ 2, 4, 6, 8, 10 });
-    //auto v3 = v1 + v2; // also test v1 - v2
-    //std::cout << "data type of result vector: " << typeid(v3[0]).name() << std::endl;
-    //v3.print();
-
-    //// try multiplication between a vector and a scalar: w = v * s (v is vector)
-    //auto vm = x * 2.0f;
-    //std::cout << "data type of result vector: " << typeid(vm[0]).name() << std::endl;
-    //vm.print();
-
-    //auto vn = 2.0f * x;
-    //std::cout << "data type of result vector: " << typeid(vn[0]).name() << std::endl;
-    //vn.print();
-
-    //// Try to compute the dot product and catch possibly thrown exceptions
-    //try { std::cout << dot(x, y) << std::endl; }
-    //catch (...) { std::cout << "Vectors have different lengths!" << std::endl; }
-
-    //// Try to compute the dot product and catch possibly thrown exceptions
-    //try { std::cout << dot(x, z) << std::endl; }
-    //catch (...) { std::cout << "Vectors have different lengths!" << std::endl; }
-    //std::cout << "== Vector test end == " << std::endl;
-    //std::cout << '\n';
-    //std::cout << '\n';
-    //---------------- Vector test end----------------
-
-
-
-    //---------------- Matrix test start----------------
-    //std::cout << "== Matrix test start == " << std::endl;
-    //Matrix<double> M(10, 20); // initialise M with 10 rows and 20 columns
-
-    //// test operator[] and ()
-    //M[{0, 0}] = 1;
-    //std::cout << M({ 0,0 }) << std::endl; // prints 1.0
-    //try { std::cout << M({ 3,3 }) << std::endl; } // throws an exception}
-    //catch (...) { std::cout << "Matrix entry not present!" << '\n'; }
-
     //// test matrix - vector multiplication
     std::cout << "test matrix - vector multiplication" << '\n';
     Matrix<double> m(4, 4);
@@ -589,7 +538,6 @@ int main(int argc, char* argv[])
         Vector<double> b_ = { 1, 2 };
         Vector<double> x_ = { 0, 0 };
 
-        std::cout << '\n';
         int cg_2 = cg<double>(A_, b_, x_);
         std::cout << "cg test 2: " << cg_2 << '\n';
         std::cout << "x: " << x_ << '\n';
