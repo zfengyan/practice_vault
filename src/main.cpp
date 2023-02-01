@@ -53,7 +53,7 @@ public:
     }
 
     // Constructor that takes a length
-    Vector(int length) : length(length), data(new T[length]) {}
+    Vector(int length) : length(length), data(new T[length]) { initialize(); }
 
     // Constructor that takes an initializer list
     Vector(std::initializer_list<T> list) : length((int)list.size()), data(new T[length])
@@ -72,6 +72,7 @@ public:
     {
         length = 0;
         delete[] data;
+        data = nullptr;
     }
 
 
@@ -321,8 +322,10 @@ operator*(const Matrix<T>& lhs, const Vector<U>& rhs)
     using result_type = typename std::common_type<T, U>::type; // necessary
     Vector<result_type> result(lhs.nrows());
 
+    std::cout << "result: " << result << '\n';
+
     //initialize
-    result.initialize();
+    //result.initialize();
 
     for (auto it = lhs.begin(); it != lhs.end(); ++it) { // need to define begin() and end() function
         //std::cout << it->first.first << " " << it->first.second << " " << it->second << '\n';
@@ -538,64 +541,65 @@ int main(int argc, char* argv[])
     //std::cout << '\n';
     //---------------- Matrix test end----------------
 
+    for (int i = 0; i < 50; ++i)
+    {
+        // ---------------- cg function test start----------------
+        std::cout << "== cg test start == " << std::endl;
+
+        //Ax = b
+        Matrix<double> cg_A(4, 4); // symmetric positive definite matrix A
+
+        // must define the matrix A explicitly - why?
+
+        /*
+        cg_A[{0, 0}] = 1; cg_A[{0, 1}] = 0; cg_A[{0, 2}] = 0; cg_A[{0, 3}] = 1;
+        cg_A[{1, 0}] = 0; cg_A[{1, 1}] = 2; cg_A[{1, 2}] = 3; cg_A[{1, 3}] = 0;
+        cg_A[{2, 0}] = 0; cg_A[{2, 1}] = 0; cg_A[{2, 2}] = 5; cg_A[{2, 3}] = 0;
+        cg_A[{3, 0}] = 1; cg_A[{3, 1}] = 0; cg_A[{3, 2}] = 0; cg_A[{3, 3}] = 1;
+        */
 
 
-    // ---------------- cg function test start----------------
-    std::cout << "== cg test start == " << std::endl;
 
-    //Ax = b
-    Matrix<double> cg_A(4, 4); // symmetric positive definite matrix A
-
-    // must define the matrix A explicitly - why?
-
-    /*
-    cg_A[{0, 0}] = 1; cg_A[{0, 1}] = 0; cg_A[{0, 2}] = 0; cg_A[{0, 3}] = 1;
-    cg_A[{1, 0}] = 0; cg_A[{1, 1}] = 2; cg_A[{1, 2}] = 3; cg_A[{1, 3}] = 0;
-    cg_A[{2, 0}] = 0; cg_A[{2, 1}] = 0; cg_A[{2, 2}] = 5; cg_A[{2, 3}] = 0;
-    cg_A[{3, 0}] = 1; cg_A[{3, 1}] = 0; cg_A[{3, 2}] = 0; cg_A[{3, 3}] = 1;
-    */
+        cg_A[{0, 0}] = 1; cg_A[{0, 3}] = 1;
+        cg_A[{1, 1}] = 2; cg_A[{1, 2}] = 3;
+        cg_A[{2, 2}] = 5;
+        cg_A[{3, 0}] = 1; cg_A[{3, 3}] = 1;
 
 
-    
-    cg_A[{0,0}] = 1; cg_A[{0,3}] = 1;
-    cg_A[{1,1}] = 2; cg_A[{1,2}] = 3;
-    cg_A[{2,2}] = 5;
-    cg_A[{3,0}] = 1; cg_A[{3,3}] = 1;
-    
+        Vector<double> cg_x = { 0, 0, 0, 0 }; // initial guess of cg function
 
-    Vector<double> cg_x = { 0, 0, 0, 0 }; // initial guess of cg function
+        Vector<double> cg_b(4); // known in advance
+        cg_b[0] = 2;
+        cg_b[1] = 5;
+        cg_b[2] = 5;
+        cg_b[3] = 2;
 
-    Vector<double> cg_b(4); // known in advance
-    cg_b[0] = 2;
-    cg_b[1] = 5;
-    cg_b[2] = 5;
-    cg_b[3] = 2;
-
-    // A, x, b must have the same type
-    // x should be: [1, 1, 1, 1] 
-    int cg_1 = cg<double>(cg_A, cg_b, cg_x);
-    std::cout << "cg test 1: " << cg_1 << '\n';
-    std::cout << "x: " << cg_x << '\n';
-    std::cout << '\n';
-    std::cout << '\n';
+        // A, x, b must have the same type
+        // x should be: [1, 1, 1, 1] 
+        int cg_1 = cg<double>(cg_A, cg_b, cg_x);
+        std::cout << "cg test 1: " << cg_1 << '\n';
+        std::cout << "x: " << cg_x << '\n';
+        std::cout << '\n';
 
 
-    // another test
-    Matrix<double> A_(2, 2);
-    A_[{0, 0}] = 4; A_[{0, 1}] = 1;
-    A_[{1, 0}] = 1; A_[{1, 1}] = 3;
-    Vector<double> b_ = { 1, 2 };
-    Vector<double> x_ = { 0, 0 };
+        // another test
+        Matrix<double> A_(2, 2);
+        A_[{0, 0}] = 4; A_[{0, 1}] = 1;
+        A_[{1, 0}] = 1; A_[{1, 1}] = 3;
+        Vector<double> b_ = { 1, 2 };
+        Vector<double> x_ = { 0, 0 };
 
-    std::cout << '\n';
-    int cg_2 = cg<double>(A_, b_, x_);
-    std::cout << "cg test 2: " << cg_2 << '\n';
-    std::cout << "x: " << x_ << '\n';
+        std::cout << '\n';
+        int cg_2 = cg<double>(A_, b_, x_);
+        std::cout << "cg test 2: " << cg_2 << '\n';
+        std::cout << "x: " << x_ << '\n';
 
-    std::cout << "== cg test end == " << std::endl;
-    std::cout << '\n';
-    std::cout << '\n';
-    // ---------------- cg function test end----------------
+        std::cout << "== cg test end == " << std::endl;
+        std::cout << '\n';
+        std::cout << '\n';
+        // ---------------- cg function test end----------------
+
+    }
 
 
     //Heat<1, double> heat(0.3125, 99, 0.001);
