@@ -166,9 +166,6 @@ public:
     int len() { return length; }
     const int len() const { return length; } // for const objects
 
-    // debug functions
-    void print() { for (int i = 0; i < length; ++i) { std::cout << data[i] << " "; }std::cout << '\n'; }
-
     // get data
     T* Data() { return data; }
     const T* Data() const { return data; }
@@ -219,27 +216,48 @@ template <typename T>
 class Matrix
 {
 public:
+
+    // default constructor
+    Matrix(): m_nrows(0), m_ncols(0) {}
+
     // constructor
     Matrix(int rows, int cols) : m_nrows(rows), m_ncols(cols) {}
 
     // dextructor
-    ~Matrix() = default;
+    ~Matrix()
+    {
+        m_nrows = 0;
+        m_ncols = 0;
+        m_data.clear(); // clear the map
+    }
 
     // operator []
     T& operator[](const std::pair<int, int>& ij) {
+        // boundary check
+        if (ij.first > m_nrows || ij.second > m_ncols) throw "Matrix [] operator: index out of range";
         return m_data[ij];
     }
 
     // operator ()
     const T& operator()(const std::pair<int, int>& ij) const {
+        // boundary check
+        if (ij.first > m_nrows || ij.second > m_ncols) throw "Matrix () operator: index out of range";
+
         auto it = m_data.find(ij);
         if (it == m_data.end()) { // not found
             throw std::out_of_range("Matrix entry not present");
         }
-        return it->second; // if found
+
+        // Returns a reference to the mapped value of the element identified with key k.
+        // use at() function of std::map or m_data[ij]?
+        return m_data.at(ij); 
     }
 
     // functions
+
+    // iterators
+    const auto begin() const { return m_data.begin(); }
+    const auto end() const { return m_data.end(); }
 
     // get the matrix size (number of rows)
     int size() { return m_nrows; }
@@ -256,13 +274,6 @@ public:
     // get the data
     std::map<std::pair<int, int>, T> data() { return m_data; }
     const std::map<std::pair<int, int>, T> data() const { return m_data; }
-
-    // debug function
-    void print()
-    {
-        for (auto iter = m_data.begin(); iter != m_data.end(); ++iter)std::cout << iter->second << " ";
-        std::cout << '\n';
-    }
 
     // for cout
     friend std::ostream& operator<<(std::ostream& os, const Matrix<T>& mat)
@@ -304,12 +315,9 @@ operator*(const Matrix<T>& lhs, const Vector<U>& rhs)
     using result_type = typename std::common_type<T, U>::type; // necessary
     Vector<result_type> result(lhs.nrows());
 
-    for (int i = 0; i < lhs.nrows(); ++i)
-    {
-        for (int j = 0; j < lhs.ncols(); ++j)
-        {
-            result[i] += lhs({ i, j }) * rhs[j];
-        }
+    for (auto it = lhs.begin(); it != lhs.end(); ++it) { // need to define begin() and end() function
+        // std::cout << it->first.first << " " << it->first.second << " " << it->second << '\n';
+        result[it->first.first] = result[it->first.first] + it->second * rhs[it->first.second];
     }
 
     /*for (auto const& [key, value] : lhs.data()) {
@@ -364,16 +372,78 @@ int cg(const Matrix<T>& A,
 template <int n, typename T>
 class Heat
 {
-    // Your implementation of the heat class starts here
 public:
+    Heat(T alpha, int m, T dt) : alpha_(alpha), m_(m), dt_(dt)
+    {
+        // Create the iteration matrix
+        int size = (m - 2) * (m - 2);
+        Matrix<T> A(size, size);
 
-    //constructor
+        for (int i = 0; i < size; i++)
+        {
+            for (int j = 0; j < size; j++)
+            {
+                if (i == j)
+                {
+                    A[{i, j}] = 1 + 2 * n * alpha * dt / (pow(m - 1, 2));
+                }
+                else if (i == j - 1 || i == j + 1 || i == j - (m - 2) || i == j + (m - 2))
+                {
+                    A[{i, j}] = -alpha * dt / (pow(m - 1, 2));
+                }
+                else
+                {
+                    A[{i, j}] = 0;
+                }
+            }
+        }
+        M_ = A;
+        std::cout << "M_: " << '\n';
+        std::cout << M_ << '\n';
+    }
 
+    Vector<T> exact(T t) const
+    {
+        Vector<T> result((m_ - 2) * (m_ - 2));
+        for (int i = 0; i < m_ - 2; i++)
+        {
+            for (int j = 0; j < m_ - 2; j++)
+            {
+                T x = i * pow(m_ - 1, -1);
+                T y = j * pow(m_ - 1, -1);
+                T sum = 0;
+                for (int k = 1; k <= n; k++)
+                {
+                    for (int l = 1; l <= n; l++)
+                    {
+                        //sum += pow(-1, k + l) * pow(M_PI, 2) * pow(k, 2) * pow(l, 2) * sin(M_PI * k * x) * sin(M_PI * l * y) * exp(-pow(M_PI, 2) * pow(k, 2) * pow(l, 2) * alpha_ * t);
+                    }
+                }
+                result[i * (m_ - 2) + j] = sum;
+            }
+        }
+        return result;
+    }
+
+    Vector<T> solve(T t) const
+    {
+        int steps = (int)(t / dt_);
+        Vector<T> u = exact(0);
+        for (int i = 0; i < steps; i++)
+        {
+            u = M_ * u;
+        }
+        return u;
+    }
 
 private:
-
+    T alpha_;
+    int m_;
+    T dt_;
+    Matrix<T> M_;
 };
 // ===================================================================================================
+
 
 
 
@@ -492,10 +562,9 @@ int main(int argc, char* argv[])
 
     // A, x, b must have the same type
     // x should be: [1, 1, 1, 1] 
-    std::cout << "cg test case 1: " << '\n';
     int cg_1 = cg<double>(cg_A, cg_b, cg_x);
     std::cout << "cg test 1: " << cg_1 << '\n';
-    cg_x.print(); // 1.01766 0.786974 0.786974 1.01766 
+    std::cout << "x: " << cg_x << '\n';
     std::cout << '\n';
     std::cout << '\n';
 
@@ -507,15 +576,18 @@ int main(int argc, char* argv[])
     Vector<double> b_ = { 1, 2 };
     Vector<double> x_ = { 0, 0 };
 
-    std::cout << "cg test case 2: " << '\n';
+    std::cout << '\n';
     int cg_2 = cg<double>(A_, b_, x_);
     std::cout << "cg test 2: " << cg_2 << '\n';
-    x_.print();
+    std::cout << "x: " << x_ << '\n';
 
     std::cout << "== cg test end == " << std::endl;
     std::cout << '\n';
     std::cout << '\n';
     // ---------------- cg function test end----------------
+
+
+    //Heat<1, double> heat(0.3125, 99, 0.001);
 
     return 0;
 }
