@@ -401,45 +401,83 @@ public:
         : alpha(alpha), m(m), dt(dt)
     {
         // the iteration matrix M
-        M = { int(std::pow(m,n)), int(std::pow(m,n)) };
+        const int nrows = (int)std::pow(m, n);
+        const int ncols = (int)std::pow(m, n);
+
+        Matrix<T> iteration_matrix(nrows, ncols);
 
         auto fact = alpha * dt * (m + 1) * (m + 1);
 
-        for (auto i = 0; i < std::pow(m, n); i++)
+        for (int i = 0; i < nrows; ++i)
         {
-            for (auto j = 0; j < std::pow(m, n); j++)
+            for (int j = 0; j < ncols; ++j)
             {
-                if (i == j)
-                {
-                    M[{i, j}] = 1;
-                }
+                if (i == j) iteration_matrix[{i, j}] = 1;
 
-                for (auto k = 0; k < n; k++)
+                for (auto k = 0; k < n; ++k)
                 {
                     if (i == j)
                     {
-                        M[{i, j}] = M[{i, j}] + fact * 2;
+                        iteration_matrix[{i, j}] = iteration_matrix[{i, j}] + fact * 2;
                     }
 
                     if ((j - i == std::pow(m, k)) && ((j % int(std::pow(m, k + 1))) / (int(std::pow(m, k))) != 0))
                     {
-                        M[{i, j}] = M[{i, j}] - fact;
+                        iteration_matrix[{i, j}] = iteration_matrix[{i, j}] - fact;
                     }
 
                     if ((i - j == std::pow(m, k)) && ((i % int(std::pow(m, k + 1))) / (int(std::pow(m, k))) != 0))
                     {
-                        M[{i, j}] = M[{i, j}] - fact;
+                        iteration_matrix[{i, j}] = iteration_matrix[{i, j}] - fact;
                     }
                 }
-                double temp = M[{i,j}];
-                std::cout << "temp: " << temp << '\n';
             }
         }
+
+        // store the iteration matrix to the attribute
+        M = iteration_matrix;
     }
 
 
-    Matrix<T> matrix() { return M; }
-    const Matrix<T> matrix() const { return M; }
+
+    //returns the exact solution at time t evaluated at all interior grid points.
+    //u(x,t) = exp(-n*pi^2*alpha*t)*u(x,0)
+    Vector<T> exact(T t) const
+    {
+        const double pi = 3.14159265358979323846;  // pi - value is set according to Microsoft's corecrt_math_defines.h
+        
+        const int length = (int)std::pow(m, n);
+        Vector<T> exact_result(length);
+
+        for (int i = 0; i < length; ++i)
+        {
+            auto x = (i % m + 1.0) / (m + 1.0);
+            auto y = (i % (m * m) + m - (i % m)) / (m * (m + 1.0));
+            auto z = (i % (m * m * m) + m * m - (i % (m * m))) / (m * m * (m + 1.0));
+
+            // calculate the exact_result vector
+            for (int j = 0; j < n; ++j)
+            {
+                if (j == 0)
+                {
+                    exact_result[i] = std::exp(-n * pi * pi * alpha * t) * std::sin(pi * x);
+                }
+                if (j == 1)
+                {
+                    exact_result[i] = exact_result[i] * std::sin(pi * y);
+                }
+                if (j == 2)
+                {
+                    exact_result[i] = exact_result[i] * std::sin(pi * z);
+                }
+            }
+        }
+        return exact_result;
+    }
+
+    // get the iteration matrix
+    Matrix<T>& matrix() { return M; }
+    const Matrix<T>& matrix() const { return M; }
 
 
 private:
@@ -452,19 +490,37 @@ private:
 
 
 
+template<typename T>
+Vector<T> compare_diff(const Vector<T>& lhs, const heat_equation_3d::Vector<T>& rhs)
+{
+    const int len = lhs.len();
+    Vector<T> diff(len);
+    for (int i = 0; i < len; ++i)diff[i] = lhs[i] - rhs[i];
+    return diff;
+}
+
+
 
 // main function
 // ===================================================================================================
 int main(int argc, char* argv[])
 {
-   Heat<1, double> heat(0.3125, 3, 0.1);
-   std::cout << "the assembled matrix M is: " << '\n';
-   std::cout << heat.matrix() << '\n';
+   Heat<1, double> heat(0.3125, 99, 0.001);
+   //std::cout << "the assembled matrix M is: " << '\n';
+   //std::cout << heat.matrix() << '\n';
+   auto exact_result = heat.exact(1);
+   std::cout << "exact solution: " << exact_result << '\n';
 
 
-   heat_equation_3d::Heat<1, double> heat_3d(0.3125, 3, 0.1);
-   std::cout << "the assembled matrix M is: " << '\n';
-   std::cout << heat_3d.M << '\n';
+   heat_equation_3d::Heat<1, double> heat_3d(0.3125, 99, 0.001);
+   //std::cout << "the assembled matrix M is: " << '\n';
+   //std::cout << heat_3d.M << '\n';
+   auto exact_result_3d = heat_3d.exact(1);
+   std::cout << "exact solution 3d: " << '\n';
+   exact_result_3d.display();
+
+   auto diff = compare_diff(exact_result, exact_result_3d);
+   std::cout << "difference vector: " << diff << '\n';
 
 
    //// test matrix - vector multiplication

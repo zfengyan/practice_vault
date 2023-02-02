@@ -16,9 +16,6 @@ namespace heat_equation_3d
 
 #define Print(x)(std::cout<< x << std::endl)
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
     /*
     Dingen die mogelijk verbeterd kunnen worden:
@@ -198,7 +195,6 @@ namespace heat_equation_3d
             }
             std::cout << array[length - 1] << "]" << std::endl;
         }
-
 
 
     };
@@ -403,8 +399,8 @@ namespace heat_equation_3d
                             M[{i, j}] = M[{i, j}] - fact;
                         }
                     }
-                    double temp = M[{i,j}];
-                    Print("i: " << i+1 << ", j: " << j+1 << ", M: " << temp);
+                    //double temp = M[{i,j}];
+                    //Print("i: " << i+1 << ", j: " << j+1 << ", M: " << temp);
                 }
             }
         }
@@ -413,7 +409,7 @@ namespace heat_equation_3d
         //u_exact(x,t) = exp(-n*pi^2*alpha*t)*u(x,0)
         Vector<T> exact(T t) const
         {
-            Vector<T> sol(std::pow(m, n));
+            Vector<T> sol((int)std::pow(m, n));
 
             for (auto l = 0; l < std::pow(m, n); l++)
             {
