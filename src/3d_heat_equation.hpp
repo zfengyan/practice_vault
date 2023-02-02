@@ -440,7 +440,7 @@ namespace heat_equation_3d
         //returns the numerical solution at time t.
         Vector<T> solve(T t) const
         {
-            Vector<T> uk(std::pow(m, n));
+            Vector<T> uk((int)std::pow(m, n));
 
             for (auto l = 0; l < std::pow(m, n); l++)
             {
@@ -469,7 +469,7 @@ namespace heat_equation_3d
 
             Vector<T> uk1 = uk;  // initial guess same as b
 
-            int no = t / dt; //number of time-steps
+            int no = (int)(t / dt); //number of time-steps
 
             // Print(no);
 

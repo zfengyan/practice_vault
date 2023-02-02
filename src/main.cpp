@@ -475,6 +475,56 @@ public:
         return exact_result;
     }
 
+
+
+    // returns the numerical solution at time t
+    Vector<T> solve(T t) const
+    {
+        const double pi = 3.14159265358979323846;  // pi - value is set according to Microsoft's corecrt_math_defines.h
+        
+        const int len = (int)std::pow(m, n);
+        Vector<T> result(len);
+
+        // calculate
+        for (int i = 0; i < len; ++i)
+        {
+            // initial conditions
+            auto x = (i % m + 1.0) / (m + 1.0);
+            auto y = (i % (m * m) + m - (i % m)) / (m * (m + 1.0));
+            auto z = (i % (m * m * m) + m * m - (i % (m * m))) / (m * m * (m + 1.0));
+
+            for (int j = 0; j < n; ++j)
+            {
+                if (j == 0)
+                {
+                    result[i] = std::sin(pi * x);
+                }
+                if (j == 1)
+                {
+                    result[i] = result[i] * std::sin(pi * y);
+                }
+                if (j == 2)
+                {
+                    result[i] = result[i] * std::sin(pi * z);
+                }
+            }
+        }
+
+        Vector<T> x = result;  // initial guess
+        int num = (int)(t / dt); //number of time-steps
+
+        // solve using conjugate gradient method
+        for (int k = 0; k < num; ++k)
+        {
+            cg(M, result, x); // A, b, x -> A * x = b
+            result = x;       // next iteration, use solution of previous iteration as initial guess
+        }
+
+        return result;
+    }
+
+
+
     // get the iteration matrix
     Matrix<T>& matrix() { return M; }
     const Matrix<T>& matrix() const { return M; }
@@ -491,7 +541,7 @@ private:
 
 
 template<typename T>
-Vector<T> compare_diff(const Vector<T>& lhs, const heat_equation_3d::Vector<T>& rhs)
+Vector<T> compare_diff(const Vector<T>& lhs, const Vector<T>& rhs)
 {
     const int len = lhs.len();
     Vector<T> diff(len);
@@ -510,7 +560,10 @@ int main(int argc, char* argv[])
    //std::cout << heat.matrix() << '\n';
    auto exact_result = heat.exact(1);
    std::cout << "exact solution: " << exact_result << '\n';
+   auto numerical_result = heat.solve(1);
+   std::cout << "numerical solution: " << numerical_result << '\n';
 
+   std::cout << '\n';
 
    heat_equation_3d::Heat<1, double> heat_3d(0.3125, 99, 0.001);
    //std::cout << "the assembled matrix M is: " << '\n';
@@ -518,8 +571,13 @@ int main(int argc, char* argv[])
    auto exact_result_3d = heat_3d.exact(1);
    std::cout << "exact solution 3d: " << '\n';
    exact_result_3d.display();
+   auto numerical_result_3d = heat_3d.solve(1);
+   std::cout << "numerical solution 3d: " << '\n';
+   numerical_result_3d.display();
 
-   auto diff = compare_diff(exact_result, exact_result_3d);
+   std::cout << '\n';
+
+   auto diff = compare_diff(exact_result, numerical_result);
    std::cout << "difference vector: " << diff << '\n';
 
 
