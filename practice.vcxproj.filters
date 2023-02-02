@@ -47,5 +47,6 @@
     <Text Include="src\test.txt" />
     <Text Include="src\main-inheritance.txt" />
     <Text Include="src\main-template.txt" />
+    <Text Include="src\heat_equation.txt" />
   </ItemGroup>
 </Project>

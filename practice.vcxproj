@@ -154,6 +154,7 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="src\heat_equation.txt" />
     <Text Include="src\main-inheritance.txt" />
     <Text Include="src\main-maze.txt" />
     <Text Include="src\main-template.txt" />
