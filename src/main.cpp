@@ -26,6 +26,7 @@ Finite difference discretization of the heat equation
 #include <map>
 #include <stdexcept>
 #include <utility>
+#include "3d_heat_equation.hpp"
 // ===================================================================================================
 
 
@@ -289,9 +290,15 @@ public:
         {
             for (int j = 0; j < mat.ncols(); ++j)
             {
-                auto x = mat({i, j});   
-                if (std::abs(x) < 1.0e-8) x = 0.0;
-                os << x << '\t';
+                try
+                {
+                    auto x = mat({ i, j });
+                    os << x << '\t';
+                }
+                catch (...)
+                {
+                    os << 0.0 << '\t';
+                }
             }
             os << '\n';
         }
@@ -383,74 +390,63 @@ template <int n, typename T>
 class Heat
 {
 public:
-    Heat(T alpha, int m, T dt) : alpha_(alpha), m_(m), dt_(dt)
-    {
-        // Create the iteration matrix
-        int size = (m - 2) * (m - 2);
-        Matrix<T> A(size, size);
 
-        for (int i = 0; i < size; i++)
+    //constructor
+    // create the iteration matrix M given in the introduction and store the result as an attribute with type Matrix<T>
+    // @param
+    // alpha: the diffusion coefficient 
+    // m: the number of points per dimension
+    // dt: the time-step size
+    Heat(T alpha, int m, T dt)
+        : alpha(alpha), m(m), dt(dt)
+    {
+        // the iteration matrix M
+        M = { int(std::pow(m,n)), int(std::pow(m,n)) };
+
+        auto fact = alpha * dt * (m + 1) * (m + 1);
+
+        for (auto i = 0; i < std::pow(m, n); i++)
         {
-            for (int j = 0; j < size; j++)
+            for (auto j = 0; j < std::pow(m, n); j++)
             {
                 if (i == j)
                 {
-                    A[{i, j}] = 1 + 2 * n * alpha * dt / (pow(m - 1, 2));
+                    M[{i, j}] = 1;
                 }
-                else if (i == j - 1 || i == j + 1 || i == j - (m - 2) || i == j + (m - 2))
-                {
-                    A[{i, j}] = -alpha * dt / (pow(m - 1, 2));
-                }
-                else
-                {
-                    A[{i, j}] = 0;
-                }
-            }
-        }
-        M_ = A;
-        std::cout << "M_: " << '\n';
-        std::cout << M_ << '\n';
-    }
 
-    Vector<T> exact(T t) const
-    {
-        Vector<T> result((m_ - 2) * (m_ - 2));
-        for (int i = 0; i < m_ - 2; i++)
-        {
-            for (int j = 0; j < m_ - 2; j++)
-            {
-                T x = i * pow(m_ - 1, -1);
-                T y = j * pow(m_ - 1, -1);
-                T sum = 0;
-                for (int k = 1; k <= n; k++)
+                for (auto k = 0; k < n; k++)
                 {
-                    for (int l = 1; l <= n; l++)
+                    if (i == j)
                     {
-                        //sum += pow(-1, k + l) * pow(M_PI, 2) * pow(k, 2) * pow(l, 2) * sin(M_PI * k * x) * sin(M_PI * l * y) * exp(-pow(M_PI, 2) * pow(k, 2) * pow(l, 2) * alpha_ * t);
+                        M[{i, j}] = M[{i, j}] + fact * 2;
+                    }
+
+                    if ((j - i == std::pow(m, k)) && ((j % int(std::pow(m, k + 1))) / (int(std::pow(m, k))) != 0))
+                    {
+                        M[{i, j}] = M[{i, j}] - fact;
+                    }
+
+                    if ((i - j == std::pow(m, k)) && ((i % int(std::pow(m, k + 1))) / (int(std::pow(m, k))) != 0))
+                    {
+                        M[{i, j}] = M[{i, j}] - fact;
                     }
                 }
-                result[i * (m_ - 2) + j] = sum;
+                double temp = M[{i,j}];
+                std::cout << "temp: " << temp << '\n';
             }
         }
-        return result;
     }
 
-    Vector<T> solve(T t) const
-    {
-        int steps = (int)(t / dt_);
-        Vector<T> u = exact(0);
-        for (int i = 0; i < steps; i++)
-        {
-            u = M_ * u;
-        }
-        return u;
-    }
+
+    Matrix<T> matrix() { return M; }
+    const Matrix<T> matrix() const { return M; }
+
 
 private:
-    T alpha_;
-    int m_;
-    T dt_;
-    Matrix<T> M_;
+    T alpha;
+    int m;
+    T dt;
+    Matrix<T> M;
 };
 // ===================================================================================================
 
@@ -461,28 +457,38 @@ private:
 // ===================================================================================================
 int main(int argc, char* argv[])
 {
-    //// test matrix - vector multiplication
-    std::cout << "test matrix - vector multiplication" << '\n';
-    Matrix<double> m(4, 4);
+   Heat<1, double> heat(0.3125, 3, 0.1);
+   std::cout << "the assembled matrix M is: " << '\n';
+   std::cout << heat.matrix() << '\n';
 
-    
-    m[{0,0}] = 1; m[{0,1}] = 0; m[{0,2}] = 0; m[{0,3}] = 1;
-    m[{1,0}] = 0; m[{1,1}] = 2; m[{1,2}] = 3; m[{1,3}] = 0;
-    m[{2,0}] = 0; m[{2,1}] = 0; m[{2,2}] = 5; m[{2,3}] = 0;
-    m[{3,0}] = 1; m[{3,1}] = 0; m[{3,2}] = 0; m[{3,3}] = 1;
 
-    std::cout << m;
-    
+   heat_equation_3d::Heat<1, double> heat_3d(0.3125, 3, 0.1);
+   std::cout << "the assembled matrix M is: " << '\n';
+   std::cout << heat_3d.M << '\n';
 
-   /* m[{0, 0}] = 1; m[{0, 3}] = 1;
-    m[{1, 1}] = 2; m[{1, 2}] = 3;
-    m[{2, 2}] = 5;
-    m[{3, 0}] = 1; m[{3, 3}] = 1;*/
 
-    Vector<double> n(4);
-    n[0] = 1.22958; n[1] = -0.196732; n[2] = -0.196732; n[3] = 1.22958;
-    auto mv = m * n;
-    std::cout << "mv: " << mv << '\n';
+   //// test matrix - vector multiplication
+   // std::cout << "test matrix - vector multiplication" << '\n';
+   // Matrix<double> m(4, 4);
+
+   // 
+   // m[{0,0}] = 1; m[{0,1}] = 0; m[{0,2}] = 0; m[{0,3}] = 1;
+   // m[{1,0}] = 0; m[{1,1}] = 2; m[{1,2}] = 3; m[{1,3}] = 0;
+   // m[{2,0}] = 0; m[{2,1}] = 0; m[{2,2}] = 5; m[{2,3}] = 0;
+   // m[{3,0}] = 1; m[{3,1}] = 0; m[{3,2}] = 0; m[{3,3}] = 1;
+
+   // std::cout << m;
+   // 
+
+   ///* m[{0, 0}] = 1; m[{0, 3}] = 1;
+   // m[{1, 1}] = 2; m[{1, 2}] = 3;
+   // m[{2, 2}] = 5;
+   // m[{3, 0}] = 1; m[{3, 3}] = 1;*/
+
+   // Vector<double> n(4);
+   // n[0] = 1.22958; n[1] = -0.196732; n[2] = -0.196732; n[3] = 1.22958;
+   // auto mv = m * n;
+   // std::cout << "mv: " << mv << '\n';
     //std::cout << "result type of matrix - vector multiplication: " << typeid(mv[0]).name() << '\n';
     //mv.print();
     //std::cout << "== Matrix test end == " << std::endl;
@@ -490,67 +496,61 @@ int main(int argc, char* argv[])
     //std::cout << '\n';
     //---------------- Matrix test end----------------
 
-    for (int i = 0; i < 50; ++i)
-    {
-        // ---------------- cg function test start----------------
-        std::cout << "== cg test start == " << std::endl;
 
-        //Ax = b
-        Matrix<double> cg_A(4, 4); // symmetric positive definite matrix A
+    //for (int i = 0; i < 50; ++i)
+    //{
+    //    // ---------------- cg function test start----------------
+    //    std::cout << "== cg test start == " << std::endl;
 
-        // must define the matrix A explicitly - why?
+    //    //Ax = b
+    //    Matrix<double> cg_A(4, 4); // symmetric positive definite matrix A
 
-        /*
-        cg_A[{0, 0}] = 1; cg_A[{0, 1}] = 0; cg_A[{0, 2}] = 0; cg_A[{0, 3}] = 1;
-        cg_A[{1, 0}] = 0; cg_A[{1, 1}] = 2; cg_A[{1, 2}] = 3; cg_A[{1, 3}] = 0;
-        cg_A[{2, 0}] = 0; cg_A[{2, 1}] = 0; cg_A[{2, 2}] = 5; cg_A[{2, 3}] = 0;
-        cg_A[{3, 0}] = 1; cg_A[{3, 1}] = 0; cg_A[{3, 2}] = 0; cg_A[{3, 3}] = 1;
-        */
+    //    /*
+    //    cg_A[{0, 0}] = 1; cg_A[{0, 1}] = 0; cg_A[{0, 2}] = 0; cg_A[{0, 3}] = 1;
+    //    cg_A[{1, 0}] = 0; cg_A[{1, 1}] = 2; cg_A[{1, 2}] = 3; cg_A[{1, 3}] = 0;
+    //    cg_A[{2, 0}] = 0; cg_A[{2, 1}] = 0; cg_A[{2, 2}] = 5; cg_A[{2, 3}] = 0;
+    //    cg_A[{3, 0}] = 1; cg_A[{3, 1}] = 0; cg_A[{3, 2}] = 0; cg_A[{3, 3}] = 1;
+    //    */
 
-
-
-        cg_A[{0, 0}] = 1; cg_A[{0, 3}] = 1;
-        cg_A[{1, 1}] = 2; cg_A[{1, 2}] = 3;
-        cg_A[{2, 2}] = 5;
-        cg_A[{3, 0}] = 1; cg_A[{3, 3}] = 1;
+    //    // define the sparse matrix
+    //    cg_A[{0, 0}] = 1; cg_A[{0, 3}] = 1;
+    //    cg_A[{1, 1}] = 2; cg_A[{1, 2}] = 3;
+    //    cg_A[{2, 2}] = 5;
+    //    cg_A[{3, 0}] = 1; cg_A[{3, 3}] = 1;
 
 
-        Vector<double> cg_x = { 0, 0, 0, 0 }; // initial guess of cg function
+    //    Vector<double> cg_x = { 0, 0, 0, 0 }; // initial guess of cg function
 
-        Vector<double> cg_b(4); // known in advance
-        cg_b[0] = 2;
-        cg_b[1] = 5;
-        cg_b[2] = 5;
-        cg_b[3] = 2;
+    //    Vector<double> cg_b(4); // known in advance
+    //    cg_b[0] = 2;
+    //    cg_b[1] = 5;
+    //    cg_b[2] = 5;
+    //    cg_b[3] = 2;
 
-        // A, x, b must have the same type
-        // x should be: [1, 1, 1, 1] 
-        int cg_1 = cg<double>(cg_A, cg_b, cg_x);
-        std::cout << "cg test 1: " << cg_1 << '\n';
-        std::cout << "x: " << cg_x << '\n';
-        std::cout << '\n';
+    //    // A, x, b must have the same type
+    //    // x should be: [1, 1, 1, 1] 
+    //    int cg_1 = cg<double>(cg_A, cg_b, cg_x);
+    //    std::cout << "cg test 1: " << cg_1 << '\n';
+    //    std::cout << "x: " << cg_x << '\n';
+    //    std::cout << '\n';
 
+    //    // another test
+    //    Matrix<double> A_(2, 2);
+    //    A_[{0, 0}] = 4; A_[{0, 1}] = 1;
+    //    A_[{1, 0}] = 1; A_[{1, 1}] = 3;
+    //    Vector<double> b_ = { 1, 2 };
+    //    Vector<double> x_ = { 0, 0 };
 
-        // another test
-        Matrix<double> A_(2, 2);
-        A_[{0, 0}] = 4; A_[{0, 1}] = 1;
-        A_[{1, 0}] = 1; A_[{1, 1}] = 3;
-        Vector<double> b_ = { 1, 2 };
-        Vector<double> x_ = { 0, 0 };
+    //    int cg_2 = cg<double>(A_, b_, x_);
+    //    std::cout << "cg test 2: " << cg_2 << '\n';
+    //    std::cout << "x: " << x_ << '\n';
 
-        int cg_2 = cg<double>(A_, b_, x_);
-        std::cout << "cg test 2: " << cg_2 << '\n';
-        std::cout << "x: " << x_ << '\n';
+    //    std::cout << "== cg test end == " << std::endl;
+    //    std::cout << '\n';
+    //    std::cout << '\n';
+    //    // ---------------- cg function test end----------------
 
-        std::cout << "== cg test end == " << std::endl;
-        std::cout << '\n';
-        std::cout << '\n';
-        // ---------------- cg function test end----------------
-
-    }
-
-
-    //Heat<1, double> heat(0.3125, 99, 0.001);
+    //}
 
     return 0;
 }

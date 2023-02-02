@@ -30,6 +30,9 @@
     <ClInclude Include="src\class_inheritance.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\3d_heat_equation.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">

@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\3d_heat_equation.hpp" />
     <ClInclude Include="src\class_inheritance.hpp" />
     <ClInclude Include="src\binarysearch.h" />
     <ClInclude Include="src\class_constructors.hpp" />
